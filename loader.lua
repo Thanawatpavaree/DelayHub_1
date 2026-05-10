@@ -25,115 +25,156 @@ _G.AutoKick = false
 _G.TeleportAfterKick = false
 
 local teleportPos = CFrame.new(0,50,0)
+local kickPos = CFrame.new(0,5,0)
+
+--------------------------------------------------
+-- AUTO KICK
+--------------------------------------------------
 
 MainTab:Toggle({
     Title = "Auto Kick",
     Desc = "เตะ Lucky Block อัตโนมัติ",
     Value = false,
+
     Callback = function(state)
+
         _G.AutoKick = state
 
         task.spawn(function()
+
             while _G.AutoKick do
+
                 pcall(function()
 
                     local player = game.Players.LocalPlayer
                     local char = player.Character or player.CharacterAdded:Wait()
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
 
-                    for _,v in pairs(workspace:GetDescendants()) do
-                        if v.Name:lower():find("lucky") or v.Name:lower():find("block") then
+                    if hrp then
 
-                            local hrp = char:FindFirstChild("HumanoidRootPart")
+                        --------------------------------------------------
+                        -- วาปไปจุดเตะ
+                        --------------------------------------------------
 
-                            if hrp then
-                                hrp.CFrame = v.CFrame + Vector3.new(0,3,0)
+                        hrp.CFrame = kickPos
 
-                                task.wait(0.2)
+                        task.wait(0.2)
 
-                                game:GetService("ReplicatedStorage")
-                                    :WaitForChild("KickEvent")
-                                    :FireServer()
+                        --------------------------------------------------
+                        -- เตะ
+                        --------------------------------------------------
 
-                                if _G.TeleportAfterKick then
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("KickEvent")
+                            :FireServer()
 
-                                    local oldName = char.Name
-                                    local transformed = false
+                        --------------------------------------------------
+                        -- วาปกลับหลังแปรงร่าง
+                        --------------------------------------------------
 
-                                    for i = 1,50 do
-                                        task.wait(0.1)
+                        if _G.TeleportAfterKick then
 
-                                        if char.Name ~= oldName then
-                                            transformed = true
-                                            break
-                                        end
+                            task.wait(2)
 
-                                        if char:FindFirstChild("Form") or
-                                        char:FindFirstChild("Mode") or
-                                        char:FindFirstChild("Transformation") then
-                                            transformed = true
-                                            break
-                                        end
-                                    end
+                            local newHrp = char:FindFirstChild("HumanoidRootPart")
 
-                                    if not transformed then
-                                        task.wait(1)
-                                    end
-
-                                    local newHrp = char:FindFirstChild("HumanoidRootPart")
-
-                                    if newHrp then
-                                        newHrp.CFrame = teleportPos
-                                    end
-                                end
-
-                                task.wait(0.5)
+                            if newHrp then
+                                newHrp.CFrame = teleportPos
                             end
                         end
                     end
                 end)
 
                 task.wait(1)
+
             end
         end)
     end
 })
 
+--------------------------------------------------
+-- TOGGLE วาปกลับ
+--------------------------------------------------
+
 MainTab:Toggle({
     Title = "Teleport After Kick",
-    Desc = "วาปกลับหลังแปรงร่าง",
+    Desc = "วาปกลับหลังเตะ",
     Value = false,
+
     Callback = function(state)
         _G.TeleportAfterKick = state
     end
 })
 
+--------------------------------------------------
+-- SET KICK POSITION
+--------------------------------------------------
+
 PlayerTab:Button({
-    Title = "Set Current Position",
-    Desc = "บันทึกตำแหน่งปัจจุบัน",
+    Title = "Set Kick Position",
+    Desc = "บันทึกจุดเตะ",
+
     Callback = function()
 
         local char = game.Players.LocalPlayer.Character
 
         if char and char:FindFirstChild("HumanoidRootPart") then
-            teleportPos = char.HumanoidRootPart.CFrame
+
+            kickPos = char.HumanoidRootPart.CFrame
 
             WindUI:Notify({
                 Title = "Saved",
-                Content = "บันทึกตำแหน่งแล้ว",
+                Content = "บันทึกจุดเตะแล้ว",
                 Duration = 3
             })
         end
     end
 })
 
+--------------------------------------------------
+-- SET RETURN POSITION
+--------------------------------------------------
+
+PlayerTab:Button({
+    Title = "Set Return Position",
+    Desc = "บันทึกจุดวาปกลับ",
+
+    Callback = function()
+
+        local char = game.Players.LocalPlayer.Character
+
+        if char and char:FindFirstChild("HumanoidRootPart") then
+
+            teleportPos = char.HumanoidRootPart.CFrame
+
+            WindUI:Notify({
+                Title = "Saved",
+                Content = "บันทึกจุดวาปกลับแล้ว",
+                Duration = 3
+            })
+        end
+    end
+})
+
+--------------------------------------------------
+-- REJOIN
+--------------------------------------------------
+
 PlayerTab:Button({
     Title = "Rejoin",
     Desc = "เข้าเซิร์ฟใหม่",
+
     Callback = function()
+
         game:GetService("TeleportService")
             :Teleport(game.PlaceId, game.Players.LocalPlayer)
+
     end
 })
+
+--------------------------------------------------
+-- NOTIFY
+--------------------------------------------------
 
 WindUI:Notify({
     Title = "Delay Hub",
