@@ -1,7 +1,5 @@
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
-local TweenService = game:GetService("TweenService")
-
 local Window = WindUI:CreateWindow({
     Title = "Delay Hub",
     Icon = "rbxassetid://0",
@@ -48,7 +46,7 @@ local TransformRemote = game:GetService("ReplicatedStorage")
 
 MainTab:Toggle({
     Title = "Auto Kick",
-    Desc = "เตะ + บินกลับอัตโนมัติ",
+    Desc = "เตะ + วิ่งกลับอัตโนมัติ",
     Value = false,
 
     Callback = function(state)
@@ -63,9 +61,11 @@ MainTab:Toggle({
 
                     local player = game.Players.LocalPlayer
                     local char = player.Character or player.CharacterAdded:Wait()
-                    local hrp = char:FindFirstChild("HumanoidRootPart")
 
-                    if hrp then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+
+                    if hrp and hum then
 
                         --------------------------------------------------
                         -- วาปไปจุดเตะ
@@ -111,28 +111,11 @@ MainTab:Toggle({
                         task.wait(3)
 
                         --------------------------------------------------
-                        -- บินกลับ
+                        -- วิ่งกลับ
                         --------------------------------------------------
 
-                        local newHrp = char:FindFirstChild("HumanoidRootPart")
-
-                        if newHrp then
-
-                            local tween = TweenService:Create(
-                                newHrp,
-                                TweenInfo.new(
-                                    8,
-                                    Enum.EasingStyle.Linear
-                                ),
-                                {
-                                    CFrame = returnPos
-                                }
-                            )
-
-                            tween:Play()
-                            tween.Completed:Wait()
-
-                        end
+                        hum:MoveTo(returnPos.Position)
+                        hum.MoveToFinished:Wait()
 
                         --------------------------------------------------
                         -- รอ 3 วิ แล้ววนใหม่
@@ -178,7 +161,7 @@ PlayerTab:Button({
 
 PlayerTab:Button({
     Title = "Set Return Position",
-    Desc = "บันทึกจุดบินกลับ",
+    Desc = "บันทึกจุดวิ่งกลับ",
 
     Callback = function()
 
@@ -190,7 +173,7 @@ PlayerTab:Button({
 
             WindUI:Notify({
                 Title = "Saved",
-                Content = "บันทึกจุดบินกลับแล้ว",
+                Content = "บันทึกจุดวิ่งกลับแล้ว",
                 Duration = 3
             })
         end
