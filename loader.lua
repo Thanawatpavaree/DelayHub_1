@@ -121,7 +121,7 @@ MainTab:Toggle({
                             local tween = TweenService:Create(
                                 newHrp,
                                 TweenInfo.new(
-                                    2,
+                                    8,
                                     Enum.EasingStyle.Linear
                                 ),
                                 {
