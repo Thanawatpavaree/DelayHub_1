@@ -1,5 +1,7 @@
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
+local TweenService = game:GetService("TweenService")
+
 local Window = WindUI:CreateWindow({
     Title = "Delay Hub",
     Icon = "rbxassetid://0",
@@ -46,7 +48,7 @@ local TransformRemote = game:GetService("ReplicatedStorage")
 
 MainTab:Toggle({
     Title = "Auto Kick",
-    Desc = "เตะ + วาปกลับอัตโนมัติ",
+    Desc = "เตะ + บินกลับอัตโนมัติ",
     Value = false,
 
     Callback = function(state)
@@ -104,13 +106,31 @@ MainTab:Toggle({
                         end
 
                         --------------------------------------------------
-                        -- วาปกลับ
+                        -- รอเพิ่มหลังแปรงร่าง
+                        --------------------------------------------------
+
+                        task.wait(3)
+
+                        --------------------------------------------------
+                        -- บินกลับ
                         --------------------------------------------------
 
                         local newHrp = char:FindFirstChild("HumanoidRootPart")
 
                         if newHrp then
-                            newHrp.CFrame = returnPos
+
+                            local tween = TweenService:Create(
+                                newHrp,
+                                TweenInfo.new(
+                                    2,
+                                    Enum.EasingStyle.Linear
+                                ),
+                                {
+                                    CFrame = returnPos
+                                }
+                            )
+
+                            tween:Play()
                         end
                     end
                 end)
@@ -153,7 +173,7 @@ PlayerTab:Button({
 
 PlayerTab:Button({
     Title = "Set Return Position",
-    Desc = "บันทึกจุดวาปกลับ",
+    Desc = "บันทึกจุดบินกลับ",
 
     Callback = function()
 
@@ -165,7 +185,7 @@ PlayerTab:Button({
 
             WindUI:Notify({
                 Title = "Saved",
-                Content = "บันทึกจุดวาปกลับแล้ว",
+                Content = "บันทึกจุดบินกลับแล้ว",
                 Duration = 3
             })
         end
