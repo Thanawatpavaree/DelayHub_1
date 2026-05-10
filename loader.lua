@@ -15,7 +15,7 @@ local Window = WindUI:CreateWindow({
 
 local MainTab = Window:Tab({
     Title = "Main",
-    Icon = "home"
+    Icon = "zap"
 })
 
 local PlayerTab = Window:Tab({
@@ -63,7 +63,6 @@ MainTab:Toggle({
 
                     local player = game.Players.LocalPlayer
                     local char = player.Character or player.CharacterAdded:Wait()
-
                     local hrp = char:FindFirstChild("HumanoidRootPart")
 
                     if hrp then
@@ -106,7 +105,7 @@ MainTab:Toggle({
                         end
 
                         --------------------------------------------------
-                        -- รอเพิ่มหลังแปรงร่าง
+                        -- รอหลังแปรงร่าง
                         --------------------------------------------------
 
                         task.wait(3)
@@ -131,12 +130,18 @@ MainTab:Toggle({
                             )
 
                             tween:Play()
+                            tween.Completed:Wait()
+
                         end
+
+                        --------------------------------------------------
+                        -- รอ 3 วิ แล้ววนใหม่
+                        --------------------------------------------------
+
+                        task.wait(3)
+
                     end
                 end)
-
-                task.wait(1)
-
             end
         end)
     end
