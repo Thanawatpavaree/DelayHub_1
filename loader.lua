@@ -39,9 +39,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local KickRemote = ReplicatedStorage
     .Shared.Packages.Network.rev_KickEvent
 
-local TransformRemote = ReplicatedStorage
-    .Shared.Packages.Network.rev_Transformed
-
 --------------------------------------------------
 -- AUTO KICK
 --------------------------------------------------
@@ -84,55 +81,10 @@ MainTab:Toggle({
                         KickRemote:FireServer(1,1)
 
                         --------------------------------------------------
-                        -- รอแปรงร่าง
-                        --------------------------------------------------
-
-                        local transformed = false
-
-                        local connection
-                        connection = TransformRemote.OnClientEvent:Connect(function()
-                            transformed = true
-                        end)
-
-                        for i = 1,50 do
-
-                            task.wait(0.1)
-
-                            if transformed then
-                                break
-                            end
-                        end
-
-                        if connection then
-                            connection:Disconnect()
-                        end
-
-                        --------------------------------------------------
-                        -- รอหลังแปรงร่าง
+                        -- รอหลังเตะ
                         --------------------------------------------------
 
                         task.wait(3)
-
-                        --------------------------------------------------
-                        -- ปิดบิน
-                        --------------------------------------------------
-
-                        hum:ChangeState(Enum.HumanoidStateType.Running)
-
-                        local bodyVelocity = hrp:FindFirstChildOfClass("BodyVelocity")
-                        if bodyVelocity then
-                            bodyVelocity:Destroy()
-                        end
-
-                        local bodyGyro = hrp:FindFirstChildOfClass("BodyGyro")
-                        if bodyGyro then
-                            bodyGyro:Destroy()
-                        end
-
-                        local vectorForce = hrp:FindFirstChildOfClass("VectorForce")
-                        if vectorForce then
-                            vectorForce:Destroy()
-                        end
 
                         --------------------------------------------------
                         -- วิ่งกลับ
