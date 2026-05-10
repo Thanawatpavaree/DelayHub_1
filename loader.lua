@@ -21,11 +21,24 @@ local PlayerTab = Window:Tab({
     Icon = "user"
 })
 
-_G.AutoKick = false
-_G.TeleportAfterKick = false
+--------------------------------------------------
+-- VARIABLES
+--------------------------------------------------
 
-local teleportPos = CFrame.new(0,50,0)
+_G.AutoKick = false
+
 local kickPos = CFrame.new(0,5,0)
+local returnPos = CFrame.new(0,5,0)
+
+--------------------------------------------------
+-- REMOTES
+--------------------------------------------------
+
+local KickRemote = game:GetService("ReplicatedStorage")
+    .Shared.Packages.Network.rev_KickEvent
+
+local TransformRemote = game:GetService("ReplicatedStorage")
+    .Shared.Packages.Network.rev_Transformed
 
 --------------------------------------------------
 -- AUTO KICK
@@ -33,7 +46,7 @@ local kickPos = CFrame.new(0,5,0)
 
 MainTab:Toggle({
     Title = "Auto Kick",
-    Desc = "เตะ Lucky Block อัตโนมัติ",
+    Desc = "เตะ + วาปกลับอัตโนมัติ",
     Value = false,
 
     Callback = function(state)
@@ -48,6 +61,7 @@ MainTab:Toggle({
 
                     local player = game.Players.LocalPlayer
                     local char = player.Character or player.CharacterAdded:Wait()
+
                     local hrp = char:FindFirstChild("HumanoidRootPart")
 
                     if hrp then
@@ -64,23 +78,39 @@ MainTab:Toggle({
                         -- เตะ
                         --------------------------------------------------
 
-                        game:GetService("ReplicatedStorage")
-                            :WaitForChild("KickEvent")
-                            :FireServer()
+                        KickRemote:FireServer(1,1)
 
                         --------------------------------------------------
-                        -- วาปกลับหลังแปรงร่าง
+                        -- รอแปรงร่าง
                         --------------------------------------------------
 
-                        if _G.TeleportAfterKick then
+                        local transformed = false
 
-                            task.wait(2)
+                        local connection
+                        connection = TransformRemote.OnClientEvent:Connect(function()
+                            transformed = true
+                        end)
 
-                            local newHrp = char:FindFirstChild("HumanoidRootPart")
+                        for i = 1,50 do
+                            task.wait(0.1)
 
-                            if newHrp then
-                                newHrp.CFrame = teleportPos
+                            if transformed then
+                                break
                             end
+                        end
+
+                        if connection then
+                            connection:Disconnect()
+                        end
+
+                        --------------------------------------------------
+                        -- วาปกลับ
+                        --------------------------------------------------
+
+                        local newHrp = char:FindFirstChild("HumanoidRootPart")
+
+                        if newHrp then
+                            newHrp.CFrame = returnPos
                         end
                     end
                 end)
@@ -89,20 +119,6 @@ MainTab:Toggle({
 
             end
         end)
-    end
-})
-
---------------------------------------------------
--- TOGGLE วาปกลับ
---------------------------------------------------
-
-MainTab:Toggle({
-    Title = "Teleport After Kick",
-    Desc = "วาปกลับหลังเตะ",
-    Value = false,
-
-    Callback = function(state)
-        _G.TeleportAfterKick = state
     end
 })
 
@@ -145,7 +161,7 @@ PlayerTab:Button({
 
         if char and char:FindFirstChild("HumanoidRootPart") then
 
-            teleportPos = char.HumanoidRootPart.CFrame
+            returnPos = char.HumanoidRootPart.CFrame
 
             WindUI:Notify({
                 Title = "Saved",
