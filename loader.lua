@@ -5,15 +5,11 @@ local Window = WindUI:CreateWindow({
     Icon = "rbxassetid://0",
     Author = "AUTO FARM",
     Folder = "DelayHub",
-    Size = UDim2.fromOffset(520, 350),
+    Size = UDim2.fromOffset(520,350),
     Transparent = true,
     Theme = "Dark",
     SideBarWidth = 170
 })
-
-----------------------------------------------------
--- TABS
-----------------------------------------------------
 
 local MainTab = Window:Tab({
     Title = "Main",
@@ -25,126 +21,122 @@ local PlayerTab = Window:Tab({
     Icon = "user"
 })
 
-----------------------------------------------------
--- VARIABLES
-----------------------------------------------------
+_G.AutoKick = false
+_G.TeleportAfterKick = false
 
-getgenv().AutoSpeed = false
-getgenv().AutoPower = false
-getgenv().AutoKick = false
-
-----------------------------------------------------
--- PLAYER TAB
-----------------------------------------------------
-
-PlayerTab:Toggle({
-    Title = "Auto Speed Upgrade",
-    Desc = "อัปสปีดอัตโนมัติ",
-    Value = false,
-
-    Callback = function(Value)
-        getgenv().AutoSpeed = Value
-
-        while getgenv().AutoSpeed do
-            task.wait(0.5)
-
-            pcall(function()
-                game:GetService("ReplicatedStorage")
-                    .Shared.Packages.Network.rev_SPEED_UPGRADE
-                    :FireServer(1)
-            end)
-        end
-    end
-})
-
-----------------------------------------------------
--- MAIN TAB
-----------------------------------------------------
+local teleportPos = CFrame.new(0,50,0)
 
 MainTab:Toggle({
-    Title = "Auto Power",
-    Desc = "อัปพลังอัตโนมัติ",
+    Title = "Auto Kick",
+    Desc = "เตะ Lucky Block อัตโนมัติ",
     Value = false,
+    Callback = function(state)
+        _G.AutoKick = state
 
-    Callback = function(Value)
-        getgenv().AutoPower = Value
+        task.spawn(function()
+            while _G.AutoKick do
+                pcall(function()
 
-        while getgenv().AutoPower do
-            task.wait(2)
+                    local player = game.Players.LocalPlayer
+                    local char = player.Character or player.CharacterAdded:Wait()
 
-            pcall(function()
-                game:GetService("ReplicatedStorage")
-                    .Shared.Packages.Network.rev_TaviMishkal
-                    :FireServer()
-            end)
-        end
+                    for _,v in pairs(workspace:GetDescendants()) do
+                        if v.Name:lower():find("lucky") or v.Name:lower():find("block") then
+
+                            local hrp = char:FindFirstChild("HumanoidRootPart")
+
+                            if hrp then
+                                hrp.CFrame = v.CFrame + Vector3.new(0,3,0)
+
+                                task.wait(0.2)
+
+                                game:GetService("ReplicatedStorage")
+                                    :WaitForChild("KickEvent")
+                                    :FireServer()
+
+                                if _G.TeleportAfterKick then
+
+                                    local oldName = char.Name
+                                    local transformed = false
+
+                                    for i = 1,50 do
+                                        task.wait(0.1)
+
+                                        if char.Name ~= oldName then
+                                            transformed = true
+                                            break
+                                        end
+
+                                        if char:FindFirstChild("Form") or
+                                        char:FindFirstChild("Mode") or
+                                        char:FindFirstChild("Transformation") then
+                                            transformed = true
+                                            break
+                                        end
+                                    end
+
+                                    if not transformed then
+                                        task.wait(1)
+                                    end
+
+                                    local newHrp = char:FindFirstChild("HumanoidRootPart")
+
+                                    if newHrp then
+                                        newHrp.CFrame = teleportPos
+                                    end
+                                end
+
+                                task.wait(0.5)
+                            end
+                        end
+                    end
+                end)
+
+                task.wait(1)
+            end
+        end)
     end
 })
 
 MainTab:Toggle({
-    Title = "Auto Kick Best",
-    Desc = "เตะแรงอัตโนมัติ",
+    Title = "Teleport After Kick",
+    Desc = "วาปกลับหลังแปรงร่าง",
     Value = false,
+    Callback = function(state)
+        _G.TeleportAfterKick = state
+    end
+})
 
-    Callback = function(Value)
-        getgenv().AutoKick = Value
+PlayerTab:Button({
+    Title = "Set Current Position",
+    Desc = "บันทึกตำแหน่งปัจจุบัน",
+    Callback = function()
 
-        while getgenv().AutoKick do
-            task.wait(3)
+        local char = game.Players.LocalPlayer.Character
 
-            pcall(function()
-                game:GetService("ReplicatedStorage")
-                    .Shared.Packages.Network.rev_KickEvent
-                    :FireServer(0.9651641547679901)
-            end)
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            teleportPos = char.HumanoidRootPart.CFrame
+
+            WindUI:Notify({
+                Title = "Saved",
+                Content = "บันทึกตำแหน่งแล้ว",
+                Duration = 3
+            })
         end
     end
 })
 
-----------------------------------------------------
--- AUTO FLY HOME WHEN TRANSFORM
-----------------------------------------------------
-
-game:GetService("ReplicatedStorage")
-    .Shared.Packages.Network.rev_Transformed
-    .OnClientEvent:Connect(function()
-
-    task.wait(3)
-
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-
-    if character and character:FindFirstChild("HumanoidRootPart") then
-
-        local hrp = character.HumanoidRootPart
-
-        -- พิกัดบ้าน
-        local target = Vector3.new(
-            712.1228637695312,
-            3.8564038276672363,
-            227.97109985351562
-        )
-
-        -- บินกลับ
-        local bodyVelocity = Instance.new("BodyVelocity")
-        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        bodyVelocity.Velocity = (target - hrp.Position).Unit * 80
-        bodyVelocity.Parent = hrp
-
-        repeat
-            task.wait(0.1)
-        until (hrp.Position - target).Magnitude < 10
-
-        bodyVelocity:Destroy()
+PlayerTab:Button({
+    Title = "Rejoin",
+    Desc = "เข้าเซิร์ฟใหม่",
+    Callback = function()
+        game:GetService("TeleportService")
+            :Teleport(game.PlaceId, game.Players.LocalPlayer)
     end
-end)
-
-----------------------------------------------------
--- NOTIFY
-----------------------------------------------------
+})
 
 WindUI:Notify({
     Title = "Delay Hub",
-    Content = "Loaded Successfully",
+    Content = "โหลดสำเร็จ",
     Duration = 3
 })
